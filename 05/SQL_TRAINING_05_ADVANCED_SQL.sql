@@ -21,7 +21,7 @@ CREATE WIDGET TEXT TRAINING_DATABASE DEFAULT '';
 
 -- DBTITLE 1,Create Database
 SELECT
-  CASE "$TRAINING_DATABASE"
+  CASE TRIM("${TRAINING_DATABASE}")
     WHEN "" THEN RAISE_ERROR("TRAINING_DATABASE widget cannot be left empty")
   END AS Validation;
 
@@ -106,7 +106,7 @@ ORDER BY
 -- DBTITLE 1,Create Filtered and Cleaned Table for 2009 Data
 -- Leaving the columns we are leaving behind commented out
 -- to know what's being dropped as well as for ease of
--- integrating back in
+-- adding back in
 CREATE OR REPLACE TABLE $TRAINING_DATABASE.CLEANED_NYCTAXI_YELLOW AS
 SELECT
   VENDOR_ID,
