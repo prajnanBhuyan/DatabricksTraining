@@ -1,8 +1,4 @@
 -- Databricks notebook source
-
-
--- COMMAND ----------
-
 -- MAGIC %md
 -- MAGIC ## Introduction
 -- MAGIC In this Databricks notebook, we will explore advanced SQL concepts to enhance your SQL skills. We'll cover topics such as window functions, common table expressions (CTEs), and subqueries.
@@ -181,6 +177,8 @@ ORDER BY
 -- MAGIC
 -- MAGIC You can refer to the official documentation for window functions in SQL:<br>
 -- MAGIC [Window Functions Documentation](https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/sql-ref-window-functions)
+-- MAGIC
+-- MAGIC ![Window GIF](https://www.kinetica.com/wp-content/uploads/2023/05/window-1.gif)
 
 -- COMMAND ----------
 
@@ -401,11 +399,18 @@ CREATE OR REPLACE TEMP VIEW EXERCISE2_SOLUTION AS
 -- COMMAND ----------
 
 -- MAGIC %md
--- MAGIC # Extras
+-- MAGIC # Thank You
 
 -- COMMAND ----------
 
--- DBTITLE 1,Databricks-Datasets README
--- MAGIC %python
--- MAGIC f = open('/dbfs/databricks-datasets/README.md', 'r')
--- MAGIC print(f.read())
+-- MAGIC %md
+-- MAGIC ---
+-- MAGIC **Author:** Prajnan Jyoti Bhuyan
+-- MAGIC
+-- MAGIC **Contact:** prajnan@outlook.com
+-- MAGIC
+-- MAGIC **Date:** September 14, 2023
+-- MAGIC
+-- MAGIC **Version:** 1.0
+-- MAGIC
+-- MAGIC **Disclaimer:** This notebook is released under an open and permissive license, allowing users to use, modify, and distribute it freely for any purpose without restrictions. You are encouraged to adapt and share this notebook as you see fit. However, the author or organization provides no warranties or guarantees regarding the accuracy or suitability of the content. Users are responsible for ensuring that their use of this notebook complies with applicable laws and regulations.
