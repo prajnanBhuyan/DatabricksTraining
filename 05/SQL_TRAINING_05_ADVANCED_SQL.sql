@@ -1,7 +1,7 @@
 -- Databricks notebook source
 -- MAGIC %md
 -- MAGIC ## Introduction
--- MAGIC In this Databricks notebook, we will explore advanced SQL concepts to enhance your SQL skills. We'll cover topics such as window functions, common table expressions (CTEs), and subqueries.
+-- MAGIC In this Databricks notebook, we will explore advanced SQL concepts to enhance your SQL skills. We'll cover topics such as window functions, and a bit of lambda functions.
 
 -- COMMAND ----------
 
@@ -55,15 +55,21 @@ CREATE DATABASE IF NOT EXISTS $TRAINING_DATABASE;
 -- COMMAND ----------
 
 -- MAGIC %python
--- MAGIC f = open('/dbfs/databricks-datasets/nyctaxi/readme_nyctaxi.txt', 'r')
--- MAGIC print(f.read())
--- MAGIC display(dbutils.fs.ls('/databricks-datasets/nyctaxi/'))
+-- MAGIC rows = [
+-- MAGIC   row[0] for row in\
+-- MAGIC   spark.read.format("csv").load(
+-- MAGIC     "/databricks-datasets/nyctaxi/readme_nyctaxi.txt"
+-- MAGIC   ).collect()
+-- MAGIC ]
+-- MAGIC print("\n".join(rows))
+-- MAGIC
+-- MAGIC display(dbutils.fs.ls('dbfs:/databricks-datasets/nyctaxi/'))
 
 -- COMMAND ----------
 
 -- DBTITLE 1,Create a Clone Table
 CREATE OR REPLACE TABLE $TRAINING_DATABASE.NYCTAXI_YELLOW
-DEEP CLONE delta.`dbfs:/databricks-datasets/nyctaxi/tables/nyctaxi_yellow`;
+SHALLOW CLONE delta.`dbfs:/databricks-datasets/nyctaxi/tables/nyctaxi_yellow`;
 
 -- COMMAND ----------
 
@@ -71,6 +77,7 @@ DEEP CLONE delta.`dbfs:/databricks-datasets/nyctaxi/tables/nyctaxi_yellow`;
 SELECT
   *
 FROM SQL_TRAINING_05_ADVANCED_SQL.NYCTAXI_YELLOW
+LIMIT 5
 
 -- COMMAND ----------
 
