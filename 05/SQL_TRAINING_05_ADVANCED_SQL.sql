@@ -358,6 +358,7 @@ ORDER BY
 
 -- COMMAND ----------
 
+-- DBTITLE 1,Problem
 -- MAGIC %md
 -- MAGIC ***Identifying Anomalies in Trip Counts***
 -- MAGIC
@@ -388,18 +389,133 @@ ORDER BY
 
 -- COMMAND ----------
 
+-- DBTITLE 1,Solution
 CREATE OR REPLACE TEMP VIEW EXERCISE2_SOLUTION AS
   /* ADD YOUR CODE HERE */
 
 -- COMMAND ----------
 
+-- DBTITLE 1,Check Solution
 -- MAGIC %python
 -- MAGIC check_exercise2_solution()
 
 -- COMMAND ----------
 
 -- MAGIC %md
+-- MAGIC ### Lambda Functions
+-- MAGIC
+-- MAGIC Lambda functions, also known as anonymous functions or lambda expressions, are a powerful feature in many programming languages, including SQL. They allow you to define small, unnamed functions on the fly for specific tasks, often simplifying code and improving readability.
+-- MAGIC
+-- MAGIC In SQL, you can use lambda functions in various contexts, including:
+-- MAGIC
+-- MAGIC - **Inline Expressions:** Create concise, one-time-use functions directly within your SQL queries to perform calculations or transformations.
+-- MAGIC
+-- MAGIC - **User-Defined Functions (UDFs):** Define reusable lambda functions using SQL's UDF capabilities for more complex operations.
+-- MAGIC
+-- MAGIC - **Aggregations:** Apply lambda functions to aggregate data in a customized way, such as computing weighted averages or specialized aggregations.
+-- MAGIC
+-- MAGIC - **Filtering:** Use lambda functions as filters to select rows based on specific criteria or conditions.
+-- MAGIC
+-- MAGIC Lambda functions provide flexibility and expressiveness, making your SQL queries more versatile and tailored to your specific requirements.
+-- MAGIC
+-- MAGIC You can refer to the official documentation for lambda functions in SQL:<br>
+-- MAGIC [Lambda Functions Documentation](https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/sql-ref-lambda-functions)
+-- MAGIC
+-- MAGIC Many [Array functions](https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/sql-ref-functions-builtin#array-functions) and [Map functions](https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/sql-ref-functions-builtin#map-functions) expect a Lambda function in one of their parameters
+-- MAGIC
+
+-- COMMAND ----------
+
+-- DBTITLE 1,Simple Example
+SELECT
+  -- ARRAY_SORT Syntax
+  -- array_sort(array, func)
+
+  ARRAY_SORT(
+    -- Array for the function to execute on
+    ARRAY('HELLO', 'WORLD'),
+
+    -- Lambda function
+    -- This function is returning -1 using the reverse for the
+    -- elements instead of the default implementation
+    (P1, P2) ->
+      CASE
+        WHEN P1 = P2 THEN 0
+        WHEN REVERSE(P1) < REVERSE(P2) THEN -1
+        ELSE 1
+      END
+  ) AS REVERSE_SORTED;
+
+-- COMMAND ----------
+
+-- DBTITLE 1,Create Collected View COLLECTED_NYCTAXI_YELLOW_SUBSET
+CREATE OR REPLACE TEMP VIEW COLLECTED_NYCTAXI_YELLOW_SUBSET AS
+-- Since our dataset is realtively large, to make this
+-- query faster we will use just the first 100 records
+-- from each day in June. You may recognise the window
+-- function from the sections above. Feel free to play
+-- around with this
+WITH CLEANED_NYCTAXI_YELLOW_SUBSET AS (
+  SELECT
+    *
+  FROM $TRAINING_DATABASE.CLEANED_NYCTAXI_YELLOW
+  WHERE MONTH(PICKUP_DATETIME) = 6
+  QUALIFY
+    ROW_NUMBER() OVER(ORDER BY PICKUP_DATETIME) <= 100
+)
+SELECT
+  DATE(PICKUP_DATETIME) AS DATE,
+  COLLECT_LIST(NAMED_STRUCT(
+    'VENDOR_ID', VENDOR_ID,
+    'PICKUP_DATETIME', PICKUP_DATETIME,
+    'DROPOFF_DATETIME', DROPOFF_DATETIME,
+    'PASSENGER_COUNT', PASSENGER_COUNT,
+    'TRIP_DISTANCE', TRIP_DISTANCE,
+    'PAYMENT_TYPE', PAYMENT_TYPE,
+    'FARE_AMOUNT', FARE_AMOUNT,
+    'TIP_AMOUNT', TIP_AMOUNT,
+    'TOLLS_AMOUNT', TOLLS_AMOUNT
+  )) AS RECORDS
+FROM CLEANED_NYCTAXI_YELLOW_SUBSET
+GROUP BY
+  DATE(PICKUP_DATETIME)
+ORDER BY
+  DATE(PICKUP_DATETIME);
+
+SELECT
+  *
+FROM COLLECTED_NYCTAXI_YELLOW_SUBSET
+LIMIT 3;
+
+-- COMMAND ----------
+
+-- DBTITLE 1,Find the Fare Per Person and Per Distance
+-- Use a lambda function for custom fare calculation
+SELECT
+  DATE,
+  TRANSFORM(
+    RECORDS,
+    R ->
+      NAMED_STRUCT(
+        "FARE_PPPD", (R.FARE_AMOUNT + R.TIP_AMOUNT) / (R.TRIP_DISTANCE * R.PASSENGER_COUNT),
+        "TOTAL_FARE", R.FARE_AMOUNT + R.TIP_AMOUNT,
+        "TRIP_DISTANCE", R.TRIP_DISTANCE,
+        "PASSENGER_COUNT", R.PASSENGER_COUNT
+      )
+  ) AS FARE_PER_PERSON_PER_DISTANCE
+FROM COLLECTED_NYCTAXI_YELLOW_SUBSET
+
+-- COMMAND ----------
+
+-- MAGIC %md
 -- MAGIC # Thank You
+
+-- COMMAND ----------
+
+-- MAGIC %md
+-- MAGIC **References:**<br>
+-- MAGIC 1. https://learn.microsoft.com/en-us/azure/databricks/sql/
+-- MAGIC 2. https://www.kinetica.com/blog/using-window-functions-in-sql/
 
 -- COMMAND ----------
 
